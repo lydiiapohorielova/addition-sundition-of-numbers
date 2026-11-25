@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Космічні Кульки — Цілі числа</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;600;700;800&family=Orbitron:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* Базові скидання та змінні теми */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-space: #070314;
+            --card-bg: rgba(22, 10, 52, 0.88);
+            --card-border: rgba(192, 132, 252, 0.4);
+            --neon-purple: #d946ef;
+            --neon-cyan: #38bdf8;
+            --text-main: #f5f3ff;
+            --text-muted: #c4b5fd;
+        }
+
+        html, body {
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--bg-space);
+            color: var(--text-main);
+            font-family: 'Exo 2', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            position: relative;
+            background-image:
+                radial-gradient(circle at 18% 15%, rgba(139, 92, 246, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 82% 85%, rgba(217, 70, 239, 0.22) 0%, transparent 48%),
+                radial-gradient(circle at 50% 50%, #150834 0%, #070314 100%);
+        }
+
+        /* Зоряне небо */
+        .stars-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                radial-gradient(1.5px 1.5px at 12% 24%, #ffffff, transparent),
+                radial-gradient(1px 1px at 28% 68%, #e9d5ff, transparent),
+                radial-gradient(2px 2px at 44% 16%, #bae6fd, transparent),
+                radial-gradient(1.5px 1.5px at 67% 42%, #ffffff, transparent),
+                radial-gradient(1px 1px at 81% 19%, #f5d0fe, transparent),
+                radial-gradient(2px 2px at 89% 73%, #7dd3fc, transparent),
+                radial-gradient(1.5px 1.5px at 19% 86%, #ffffff, transparent),
+                radial-gradient(1px 1px at 56% 88%, #e9d5ff, transparent);
+            background-size: 320px 320px;
+            opacity: 0.78;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', 'Exo 2', 'Courier New', monospace;
+        }
+
+        .neon-glow-purple {
+            text-shadow: 0 0 10px rgba(217, 70, 239, 0.85), 0 0 22px rgba(147, 51, 234, 0.55);
+        }
+
+        .neon-glow-cyan {
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.85), 0 0 20px rgba(14, 165, 233, 0.5);
+        }
+
+        /* Основна оболонка */
+        .app-shell {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 740px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        /* Верхня компактна панель */
+        .top-header {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(168, 85, 247, 0.14);
+            flex-shrink: 0;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .brand-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .brand-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: #f3e8ff;
+            white-space: nowrap;
+        }
+
+        .progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 2px;
+        }
+
+        .progress-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .progress-track {
+            width: 88px;
+            height: 5px;
+            background: rgba(15, 7, 38, 0.9);
+            border-radius: 999px;
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 5%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899, #38bdf8);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .stats-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: right;
+        }
+
+        .stat-caption {
+            font-size: 0.58rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            opacity: 0.82;
+        }
+
+        .stat-val {
+            font-size: 0.82rem;
+            font-weight: 800;
+        }
+
+        .stat-streak { color: #67e8f9; }
+        .stat-score { color: #f0abfc; }
+
+        .stat-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(192, 132, 252, 0.28);
+        }
+
+        /* Головна картка завдання та арени */
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 10px 12px;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(139, 92, 246, 0.12);
+        }
+
+        /* Однорядковий вираз: приклад = [ комірка ] [ ОК ] */
+        .equation-row {
+            background: rgba(11, 4, 30, 0.78);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 16px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 8px;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 14px rgba(139, 92, 246, 0.14);
+        }
+
+        .expression-value {
+            font-size: clamp(1.35rem, 5.4vw, 2.2rem);
+            font-weight: 900;
+            letter-spacing: 0.03em;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .equals-sign {
+            font-size: clamp(1.4rem, 5.4vw, 2.2rem);
+            font-weight: 900;
+            color: #e879f9;
+            text-shadow: 0 0 10px rgba(232, 121, 249, 0.8);
+            user-select: none;
+        }
+
+        .answer-field {
+            width: clamp(68px, 18vw, 92px);
+            height: 42px;
+            text-align: center;
+            font-size: clamp(1.15rem, 4.4vw, 1.45rem);
+            font-weight: 800;
+            color: #ffffff;
+            background: #160936;
+            border: 2px solid rgba(192, 132, 252, 0.65);
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .answer-field::placeholder {
+            color: rgba(196, 181, 253, 0.45);
+        }
+
+        .answer-field:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.55);
+        }
+
+        .btn-check {
+            height: 42px;
+            padding: 0 11px;
+            border: 1px solid rgba(240, 171, 252, 0.7);
+            border-radius: 12px;
+            background: linear-gradient(135deg, #9333ea 0%, #c026d3 100%);
+            color: #ffffff;
+            font-size: clamp(0.68rem, 2.6vw, 0.8rem);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            box-shadow: 0 0 14px rgba(192, 38, 211, 0.5);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-check:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(217, 70, 239, 0.85);
+        }
+
+        .btn-check:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .btn-check:disabled {
+            opacity: 0.65;
+            cursor: default;
+        }
+
+        /* Банер стану */
+        .status-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            background: rgba(76, 29, 149, 0.45);
+            border: 1px solid rgba(192, 132, 252, 0.35);
+            color: #e9d5ff;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .status-banner.is-success {
+            background: rgba(6, 78, 59, 0.78);
+            border-color: rgba(52, 211, 153, 0.75);
+            color: #a7f3d0;
+            box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .status-banner.is-error {
+            background: rgba(136, 19, 55, 0.8);
+            border-color: rgba(251, 113, 133, 0.78);
+            color: #fecdd3;
+            box-shadow: 0 0 14px rgba(244, 63, 94, 0.35);
+        }
+
+        .status-banner.is-warn {
+            background: rgba(120, 53, 15, 0.8);
+            border-color: rgba(251, 191, 36, 0.75);
+            color: #fde68a;
+        }
+
+        /* Арена візуалізації */
+        .viz-wrapper {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .viz-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            font-size: 0.72rem;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+
+        .side-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 700;
+        }
+
+        .mini-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .mini-dot.pos {
+            background: radial-gradient(circle at 30% 30%, #ff8fa3, #ff1e56);
+            box-shadow: 0 0 6px #ff1e56;
+        }
+
+        .mini-dot.neg {
+            background: radial-gradient(circle at 30% 30%, #90e0ef, #0096c7);
+            box-shadow: 0 0 6px #00b4d8;
+        }
+
+        .btn-replay {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 8px;
+            background: rgba(107, 33, 168, 0.8);
+            border: 1px solid rgba(192, 132, 252, 0.55);
+            color: #f3e8ff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-replay.visible {
+            display: inline-flex;
+        }
+
+        /* Космічна арена: ліва сторона, центр, права сторона */
+        .orb-arena {
+            position: relative;
+            flex: 1;
+            min-height: 120px;
+            background: rgba(8, 3, 22, 0.9);
+            border: 1px solid rgba(168, 85, 247, 0.38);
+            border-radius: 16px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: 1fr 2px 1fr;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.75);
+        }
+
+        .center-divider {
+            width: 2px;
+            height: 84%;
+            background: linear-gradient(180deg, transparent, rgba(217, 70, 239, 0.6), rgba(56, 189, 248, 0.6), transparent);
+            border-radius: 999px;
+            position: relative;
+            transition: opacity 0.3s ease;
+        }
+
+        .center-divider.hidden-line {
+            opacity: 0.2;
+        }
+
+        .arena-side {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            min-width: 0;
+        }
+
+        .orb-grid {
+            display: grid;
+            grid-template-columns: repeat(5, max-content);
+            gap: 4px;
+            justify-content: center;
+            align-content: center;
+        }
+
+        @media (min-width: 560px) {
+            .orb-grid {
+                grid-template-columns: repeat(6, max-content);
+                gap: 6px;
+            }
+        }
+
+        /* Неонові кульки */
+        .orb {
+            width: clamp(19px, 4.6vw, 27px);
+            height: clamp(19px, 4.6vw, 27px);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: clamp(0.72rem, 2.1vw, 0.92rem);
+            color: #ffffff;
+            user-select: none;
+            position: relative;
+            transition: transform 0.56s cubic-bezier(0.34, 1.38, 0.64, 1), opacity 0.32s ease, box-shadow 0.25s ease;
+        }
+
+        .orb-pos {
+            background: radial-gradient(circle at 30% 30%, #ff9ebb, #ff1e56 62%, #800020 100%);
+            border: 1.5px solid #ffd6e0;
+            box-shadow: 0 0 8px rgba(255, 30, 86, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.65);
+        }
+
+        .orb-neg {
+            background: radial-gradient(circle at 30% 30%, #caf0f8, #0096c7 62%, #023e8a 100%);
+            border: 1.5px solid #e0fbfc;
+            box-shadow: 0 0 8px rgba(0, 180, 216, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.65);
+        }
+
+        .orb-colliding-pos {
+            z-index: 25;
+            box-shadow: 0 0 18px #ffffff, 0 0 28px #ff1e56;
+        }
+
+        .orb-colliding-neg {
+            z-index: 25;
+            box-shadow: 0 0 18px #ffffff, 0 0 28px #00b4d8;
+        }
+
+        .orb-gone {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        .orb-survivor {
+            z-index: 15;
+            animation: pulseSurvivor 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseSurvivor {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.28); }
+        }
+
+        /* Центральний контейнер об'єднання для однакових знаків */
+        .merged-center-box {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 20;
+            padding: 8px;
+        }
+
+        .merged-center-box.active {
+            display: flex;
+        }
+
+        .merged-grid {
+            display: grid;
+            grid-template-columns: repeat(7, max-content);
+            gap: 5px;
+            padding: 8px 12px;
+            border-radius: 16px;
+            background: rgba(24, 10, 58, 0.85);
+            border: 1px solid rgba(217, 70, 239, 0.55);
+            box-shadow: 0 0 22px rgba(168, 85, 247, 0.45);
+            animation: popMerge 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @media (min-width: 560px) {
+            .merged-grid {
+                grid-template-columns: repeat(10, max-content);
+                gap: 6px;
+            }
+        }
+
+        @keyframes popMerge {
+            0% { transform: scale(0.75); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Спалах при зіткненні протилежних кульок */
+        .spark-burst {
+            position: absolute;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 15%, #f0abfc 50%, rgba(192, 132, 252, 0) 76%);
+            pointer-events: none;
+            z-index: 30;
+            animation: sparkAnim 0.48s ease-out forwards;
+        }
+
+        @keyframes sparkAnim {
+            0% { transform: scale(0.2); opacity: 1; }
+            55% { transform: scale(1.6); opacity: 0.95; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        /* Підказка під ареною */
+        .hint-bar {
+            background: rgba(30, 14, 68, 0.72);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            border-radius: 10px;
+            padding: 5px 10px;
+            text-align: center;
+            font-size: 0.72rem;
+            color: #ddd6fe;
+            line-height: 1.28;
+            flex-shrink: 0;
+        }
+
+        /* Екран завершення */
+        .result-card {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px 16px;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 14px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+        }
+
+        .result-card.active {
+            display: flex;
+        }
+
+        .quiz-card.hidden {
+            display: none;
+        }
+
+        .result-medal {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7e22ce, #d946ef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            box-shadow: 0 0 25px rgba(217, 70, 239, 0.75);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .result-box {
+            background: rgba(15, 7, 38, 0.8);
+            border: 1px solid rgba(192, 132, 252, 0.3);
+            border-radius: 14px;
+            padding: 10px 6px;
+        }
+
+        .result-box-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .result-box-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .shake {
+            animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shakeAnim {
+            15%, 85% { transform: translateX(-3px); }
+            30%, 70% { transform: translateX(5px); }
+            45%, 60% { transform: translateX(-6px); }
+        }
+
+        .bottom-legend {
+            text-align: center;
+            font-size: 0.66rem;
+            color: rgba(196, 181, 253, 0.72);
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-layer"></div>
+
+    <div class="app-shell">
+        <header class="top-header">
+            <div class="brand-box">
+                <span class="brand-icon">🪐</span>
+                <div>
+                    <div class="brand-title font-orbitron neon-glow-purple">КОСМІЧНІ КУЛЬКИ</div>
+                    <div class="progress-wrap">
+                        <span id="progress-text" class="progress-label font-orbitron">1 / 20</span>
+                        <div class="progress-track">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-group">
+                <div class="stat-item">
+                    <div class="stat-caption">Серія</div>
+                    <div id="streak-val" class="stat-val stat-streak font-orbitron neon-glow-cyan">🔥 0</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-caption">Бали</div>
+                    <div id="score-val" class="stat-val stat-score font-orbitron neon-glow-purple">0</div>
+                </div>
+            </div>
+        </header>
+
+        <main id="quiz-card" class="main-card quiz-card">
+            <div class="equation-row">
+                <span id="math-expr" class="expression-value font-orbitron neon-glow-purple">-13 + 8</span>
+                <span class="equals-sign font-orbitron">=</span>
+                <input
+                    type="text"
+                    id="answer-input"
+                    inputmode="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                    placeholder="?"
+                    aria-label="Введи відповідь"
+                    class="answer-field font-orbitron"
+                >
+                <button type="button" id="submit-btn" class="btn-check font-orbitron">
+                    Перевірити
+                </button>
+            </div>
+
+            <div id="status-banner" class="status-banner">
+                ✨ Обчисли вираз та впиши відповідь у комірку
+            </div>
+
+            <div class="viz-wrapper">
+                <div class="viz-toolbar">
+                    <div id="left-label" class="side-counter">
+                        <span class="mini-dot neg">−</span>
+                        <span>Ліворуч: 13</span>
+                    </div>
+
+                    <button type="button" id="replay-btn" class="btn-replay">
+                        🔄 Ще раз
+                    </button>
+
+                    <div id="right-label" class="side-counter">
+                        <span>Праворуч: 8</span>
+                        <span class="mini-dot pos">+</span>
+                    </div>
+                </div>
+
+                <div id="orb-arena" class="orb-arena">
+                    <div class="arena-side">
+                        <div id="left-grid" class="orb-grid"></div>
+                    </div>
+
+                    <div id="center-divider" class="center-divider" title="Центр арени"></div>
+
+                    <div class="arena-side">
+                        <div id="right-grid" class="orb-grid"></div>
+                    </div>
+
+                    <div id="merged-center-box" class="merged-center-box" aria-hidden="true">
+                        <div id="merged-grid" class="merged-grid"></div>
+                    </div>
+                </div>
+
+                <div id="hint-bar" class="hint-bar">
+                    Ліворуч — перше число, праворуч — друге. Протилежні пари (<strong style="color:#fb7185;">+</strong> і <strong style="color:#38bdf8;">−</strong>) зустрічаються в центрі та зникають!
+                </div>
+            </div>
+        </main>
+
+        <section id="result-card" class="result-card">
+            <div class="result-medal">🚀</div>
+            <h2 class="font-orbitron neon-glow-purple" style="font-size: 1.35rem; font-weight: 900;">
+                МІСІЮ ВИКОНАНО!
+            </h2>
+            <p style="font-size: 0.84rem; color: #ddd6fe; max-width: 360px;">
+                Ти успішно пройшов космічний тест на додавання та віднімання цілих чисел з переходом через десяток!
+            </p>
+
+            <div class="result-grid">
+                <div class="result-box">
+                    <div class="result-box-label">Бали</div>
+                    <div id="res-score" class="result-box-val font-orbitron" style="color: #f0abfc;">0</div>
+                </div>
+                <div class="result-box">
+                    <div class="result-box-label">З 1-ї спроби</div>
+                    <div id="res-first" class="result-box-val font-orbitron" style="color: #6ee7b7;">0 / 20</div>
+                </div>
+                <div class="result-box">
+                    <div class="result-box-label">Макс. серія</div>
+                    <div id="res-streak" class="result-box-val font-orbitron" style="color: #67e8f9;">0</div>
+                </div>
+            </div>
+
+            <button type="button" id="restart-btn" class="btn-check font-orbitron" style="padding: 0 24px; font-size: 0.88rem;">
+                🔄 Пройти тест ще раз
+            </button>
+        </section>
+
+        <footer class="bottom-legend">
+            🔴 Червона кулька = <strong>+1</strong> &nbsp;|&nbsp; 🔵 Синя кулька = <strong>−1</strong>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            "use strict";
+
+            // 12 базових прикладів з переходом через десяток + 8 додаткових прикладів того ж типу
+            const BASE_TASKS = [
+                { text: "-13 + 8", a: -13, b: 8, ans: -5 },
+                { text: "16 - 7", a: 16, b: -7, ans: 9 },
+                { text: "-15 + 8", a: -15, b: 8, ans: -7 },
+                { text: "-7 - 6", a: -7, b: -6, ans: -13 },
+                { text: "9 - 17", a: 9, b: -17, ans: -8 },
+                { text: "-8 - 6", a: -8, b: -6, ans: -14 },
+                { text: "-5 + 6", a: -5, b: 6, ans: 1 },
+                { text: "27 - 9", a: 27, b: -9, ans: 18 },
+                { text: "-5 - 6", a: -5, b: -6, ans: -11 },
+                { text: "5 + 7", a: 5, b: 7, ans: 12 },
+                { text: "-14 - 5", a: -14, b: -5, ans: -19 },
+                { text: "-17 + 9", a: -17, b: 9, ans: -8 }
+            ];
+
+            const EXTRA_TASKS = [
+                { text: "14 - 8", a: 14, b: -8, ans: 6 },
+                { text: "-12 + 7", a: -12, b: 7, ans: -5 },
+                { text: "-9 - 4", a: -9, b: -4, ans: -13 },
+                { text: "8 - 15", a: 8, b: -15, ans: -7 },
+                { text: "-16 + 9", a: -16, b: 9, ans: -7 },
+                { text: "23 - 6", a: 23, b: -6, ans: 17 },
+                { text: "-6 - 8", a: -6, b: -8, ans: -14 },
+                { text: "11 - 18", a: 11, b: -18, ans: -7 }
+            ];
+
+            let taskQueue = [];
+            let currentIdx = 0;
+            let score = 0;
+            let streak = 0;
+            let bestStreak = 0;
+            let firstTrySolved = 0;
+            let madeMistake = false;
+            let locked = false;
+            let timers = [];
+
+            const quizCard = document.getElementById("quiz-card");
+            const resultCard = document.getElementById("result-card");
+            const progressText = document.getElementById("progress-text");
+            const progressFill = document.getElementById("progress-fill");
+            const streakVal = document.getElementById("streak-val");
+            const scoreVal = document.getElementById("score-val");
+            const statusBanner = document.getElementById("status-banner");
+            const mathExpr = document.getElementById("math-expr");
+            const answerInput = document.getElementById("answer-input");
+            const submitBtn = document.getElementById("submit-btn");
+            const leftLabel = document.getElementById("left-label");
+            const rightLabel = document.getElementById("right-label");
+            const replayBtn = document.getElementById("replay-btn");
+            const orbArena = document.getElementById("orb-arena");
+            const centerDivider = document.getElementById("center-divider");
+            const leftGrid = document.getElementById("left-grid");
+            const rightGrid = document.getElementById("right-grid");
+            const mergedCenterBox = document.getElementById("merged-center-box");
+            const mergedGrid = document.getElementById("merged-grid");
+            const hintBar = document.getElementById("hint-bar");
+            const restartBtn = document.getElementById("restart-btn");
+
+            function shuffle(list) {
+                const copy = list.slice();
+                for (let i = copy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    const tmp = copy[i];
+                    copy[i] = copy[j];
+                    copy[j] = tmp;
+                }
+                return copy;
+            }
+
+            function clearTimers() {
+                for (let i = 0; i < timers.length; i++) {
+                    clearTimeout(timers[i]);
+                }
+                timers = [];
+            }
+
+            function setBanner(text, type) {
+                statusBanner.textContent = text;
+                statusBanner.className = "status-banner";
+                if (type) {
+                    statusBanner.classList.add(type);
+                }
+            }
+
+            function updateHUD() {
+                const total = taskQueue.length;
+                const shown = Math.min(currentIdx + 1, total);
+                progressText.textContent = shown + " / " + total;
+                progressFill.style.width = Math.max((currentIdx / total) * 100, 5) + "%";
+                streakVal.textContent = "🔥 " + streak;
+                scoreVal.textContent = String(score);
+            }
+
+            function createOrbElement(isPos) {
+                const el = document.createElement("div");
+                el.className = "orb " + (isPos ? "orb-pos" : "orb-neg");
+                el.textContent = isPos ? "+" : "−";
+                return el;
+            }
+
+            // Початкове розташування: перше число ліворуч, друге число праворуч
+            function drawOrbs(task) {
+                clearTimers();
+                replayBtn.classList.remove("visible");
+                mergedCenterBox.classList.remove("active");
+                mergedGrid.innerHTML = "";
+                centerDivider.classList.remove("hidden-line");
+
+                const leftCount = Math.abs(task.a);
+                const leftIsPos = task.a > 0;
+
+                const rightCount = Math.abs(task.b);
+                const rightIsPos = task.b > 0;
+
+                leftLabel.style.color = leftIsPos ? "#fda4af" : "#7dd3fc";
+                leftLabel.innerHTML =
+                    '<span class="mini-dot ' + (leftIsPos ? "pos" : "neg") + '">' + (leftIsPos ? "+" : "−") + "</span>" +
+                    "<span>Ліворуч: " + leftCount + "</span>";
+
+                rightLabel.style.color = rightIsPos ? "#fda4af" : "#7dd3fc";
+                rightLabel.innerHTML =
+                    "<span>Праворуч: " + rightCount + "</span>" +
+                    '<span class="mini-dot ' + (rightIsPos ? "pos" : "neg") + '">' + (rightIsPos ? "+" : "−") + "</span>";
+
+                leftGrid.innerHTML = "";
+                rightGrid.innerHTML = "";
+
+                const oldSparks = orbArena.querySelectorAll(".spark-burst");
+                for (let i = 0; i < oldSparks.length; i++) {
+                    oldSparks[i].remove();
+                }
+
+                for (let i = 0; i < leftCount; i++) {
+                    leftGrid.appendChild(createOrbElement(leftIsPos));
+                }
+
+                for (let i = 0; i < rightCount; i++) {
+                    rightGrid.appendChild(createOrbElement(rightIsPos));
+                }
+
+                if (leftIsPos !== rightIsPos) {
+                    hintBar.innerHTML =
+                        'Ліворуч і праворуч — протилежні знаки. Пари (<strong style="color:#fb7185;">+</strong> і <strong style="color:#38bdf8;">−</strong>) зустрічаються в центрі та зникають!';
+                } else {
+                    hintBar.innerHTML =
+                        "Ліворуч і праворуч — однаковий знак. При помилці кульки злітаються в центр в одну спільну групу для підрахунку!";
+                }
+            }
+
+            function loadQuestion(idx) {
+                madeMistake = false;
+                locked = false;
+
+                const task = taskQueue[idx];
+                mathExpr.textContent = task.text;
+                answerInput.value = "";
+                answerInput.disabled = false;
+                submitBtn.disabled = false;
+
+                setBanner("✨ Обчисли вираз та впиши відповідь у комірку", "");
+                drawOrbs(task);
+                updateHUD();
+
+                setTimeout(function () {
+                    answerInput.focus();
+                }, 40);
+            }
+
+            // Анімація при помилці:
+            // - якщо знаки однакові (наприклад, -7 - 6 або 5 + 7): кульки злітаються з боків у центр у спільну групу
+            // - якщо знаки різні: пари (+) та (−) летять назустріч у центр, стикаються зі спалахом і зникають
+            function animateCenterVisualization(task) {
+                drawOrbs(task);
+                replayBtn.classList.add("visible");
+
+                const leftOrbs = Array.from(leftGrid.querySelectorAll(".orb"));
+                const rightOrbs = Array.from(rightGrid.querySelectorAll(".orb"));
+                const leftIsPos = task.a > 0;
+                const rightIsPos = task.b > 0;
+                const sameSigns = leftIsPos === rightIsPos;
+
+                if (sameSigns) {
+                    hintBar.textContent = "⏳ Кульки злітаються з лівого і правого країв у центр у спільну групу...";
+                    centerDivider.classList.add("hidden-line");
+
+                    const arenaBox = orbArena.getBoundingClientRect();
+                    const centerX = arenaBox.width / 2;
+                    const centerY = arenaBox.height / 2;
+
+                    // Спочатку плавно ведемо кульки зліва і справа до центру
+                    leftOrbs.forEach(function (orb, idx) {
+                        const t = setTimeout(function () {
+                            const b = orb.getBoundingClientRect();
+                            const ox = b.left - arenaBox.left + b.width / 2;
+                            const oy = b.top - arenaBox.top + b.height / 2;
+                            const jitterX = ((idx % 4) - 1.5) * 14;
+                            const jitterY = (Math.floor(idx / 4) - 1) * 12;
+                            orb.classList.add(leftIsPos ? "orb-colliding-pos" : "orb-colliding-neg");
+                            orb.style.transform =
+                                "translate(" + (centerX - ox + jitterX) + "px, " + (centerY - oy + jitterY) + "px) scale(1.08)";
+                        }, idx * 35);
+                        timers.push(t);
+                    });
+
+                    rightOrbs.forEach(function (orb, idx) {
+                        const t = setTimeout(function () {
+                            const b = orb.getBoundingClientRect();
+                            const ox = b.left - arenaBox.left + b.width / 2;
+                            const oy = b.top - arenaBox.top + b.height / 2;
+                            const jitterX = ((idx % 4) - 1.5) * 14;
+                            const jitterY = (Math.floor(idx / 4) - 1) * 12;
+                            orb.classList.add(rightIsPos ? "orb-colliding-pos" : "orb-colliding-neg");
+                            orb.style.transform =
+                                "translate(" + (centerX - ox + jitterX) + "px, " + (centerY - oy + jitterY) + "px) scale(1.08)";
+                        }, idx * 35);
+                        timers.push(t);
+                    });
+
+                    const maxSteps = Math.max(leftOrbs.length, rightOrbs.length);
+                    const mergeTimer = setTimeout(function () {
+                        // Ховаємо бокові кульки та показуємо об'єднану групу в центрі
+                        leftOrbs.forEach(function (o) { o.style.opacity = "0"; });
+                        rightOrbs.forEach(function (o) { o.style.opacity = "0"; });
+
+                        mergedGrid.innerHTML = "";
+                        const totalCount = leftOrbs.length + rightOrbs.length;
+                        for (let i = 0; i < totalCount; i++) {
+                            const mergedOrb = createOrbElement(leftIsPos);
+                            mergedOrb.classList.add("orb-survivor");
+                            mergedGrid.appendChild(mergedOrb);
+                        }
+                        mergedCenterBox.classList.add("active");
+
+                        if (leftIsPos) {
+                            hintBar.innerHTML =
+                                '🔴 Усі <strong style="color:#fb7185;">' + totalCount + " червоних (+)</strong> кульок зібралися в центрі! Порахуй їх і впиши відповідь.";
+                        } else {
+                            hintBar.innerHTML =
+                                '🔵 Усі <strong style="color:#38bdf8;">' + totalCount + ' синіх (−)</strong> кульок зібралися в центрі! Порахуй їх і впиши відповідь зі знаком <strong style="color:#7dd3fc;">−</strong>.';
+                        }
+                        answerInput.focus();
+                    }, maxSteps * 35 + 520);
+
+                    timers.push(mergeTimer);
+                    return;
+                }
+
+                // Різні знаки: пари (+) і (−) летять назустріч у центр, стикаються зі спалахом і зникають
+                const pairs = Math.min(leftOrbs.length, rightOrbs.length);
+                hintBar.textContent = "⏳ Червона та синя кульки летять назустріч у центр, стикаються та зникають...";
+
+                const stepMs = pairs > 10 ? 180 : 250;
+
+                for (let i = 0; i < pairs; i++) {
+                    const t1 = setTimeout(function () {
+                        const lOrb = leftOrbs[i];
+                        const rOrb = rightOrbs[i];
+                        if (!lOrb || !rOrb) return;
+
+                        const arenaBox = orbArena.getBoundingClientRect();
+                        const lBox = lOrb.getBoundingClientRect();
+                        const rBox = rOrb.getBoundingClientRect();
+
+                        const centerX = arenaBox.width / 2;
+                        const meetY = (lBox.top + rBox.top) / 2 - arenaBox.top + lBox.height / 2;
+
+                        const lCenterX = lBox.left - arenaBox.left + lBox.width / 2;
+                        const lCenterY = lBox.top - arenaBox.top + lBox.height / 2;
+
+                        const rCenterX = rBox.left - arenaBox.left + rBox.width / 2;
+                        const rCenterY = rBox.top - arenaBox.top + rBox.height / 2;
+
+                        const dxL = centerX - lCenterX - lBox.width * 0.32;
+                        const dyL = meetY - lCenterY;
+
+                        const dxR = centerX - rCenterX + rBox.width * 0.32;
+                        const dyR = meetY - rCenterY;
+
+                        lOrb.classList.add(leftIsPos ? "orb-colliding-pos" : "orb-colliding-neg");
+                        rOrb.classList.add(rightIsPos ? "orb-colliding-pos" : "orb-colliding-neg");
+
+                        lOrb.style.transform = "translate(" + dxL + "px, " + dyL + "px) scale(1.16)";
+                        rOrb.style.transform = "translate(" + dxR + "px, " + dyR + "px) scale(1.16)";
+
+                        const t2 = setTimeout(function () {
+                            const spark = document.createElement("div");
+                            spark.className = "spark-burst";
+                            spark.style.left = (centerX - 19) + "px";
+                            spark.style.top = (meetY - 19) + "px";
+                            orbArena.appendChild(spark);
+                            setTimeout(function () { spark.remove(); }, 520);
+
+                            lOrb.style.transform = "translate(" + (centerX - lCenterX) + "px, " + dyL + "px) scale(0)";
+                            rOrb.style.transform = "translate(" + (centerX - rCenterX) + "px, " + dyR + "px) scale(0)";
+                            lOrb.classList.add("orb-gone");
+                            rOrb.classList.add("orb-gone");
+                        }, 300);
+
+                        timers.push(t2);
+                    }, 220 + i * stepMs);
+
+                    timers.push(t1);
+                }
+
+                const totalTime = 220 + pairs * stepMs + 440;
+                const endTimer = setTimeout(function () {
+                    for (let i = 0; i < pairs; i++) {
+                        if (leftOrbs[i]) leftOrbs[i].style.display = "none";
+                        if (rightOrbs[i]) rightOrbs[i].style.display = "none";
+                    }
+
+                    const remLeft = leftOrbs.length - pairs;
+                    const remRight = rightOrbs.length - pairs;
+
+                    for (let i = pairs; i < leftOrbs.length; i++) {
+                        leftOrbs[i].classList.add("orb-survivor");
+                    }
+                    for (let i = pairs; i < rightOrbs.length; i++) {
+                        rightOrbs[i].classList.add("orb-survivor");
+                    }
+
+                    const remPos = leftIsPos ? remLeft : remRight;
+                    const remNeg = !leftIsPos ? remLeft : remRight;
+
+                    if (remPos > 0) {
+                        hintBar.innerHTML =
+                            '🔴 Залишилися тільки <strong style="color:#fb7185;">червоні (+)</strong> кульки! Порахуй їх і впиши відповідь.';
+                    } else if (remNeg > 0) {
+                        hintBar.innerHTML =
+                            '🔵 Залишилися тільки <strong style="color:#38bdf8;">сині (−)</strong> кульки! Порахуй їх і впиши відповідь зі знаком <strong style="color:#7dd3fc;">−</strong>.';
+                    } else {
+                        hintBar.innerHTML = "✨ Усі кульки зустрілися в центрі та зникли! Залишилося <strong>0</strong>.";
+                    }
+
+                    answerInput.focus();
+                }, totalTime);
+
+                timers.push(endTimer);
+            }
+
+            function handleCheck() {
+                if (locked) return;
+
+                const cleaned = answerInput.value.trim().replace(/−/g, "-");
+                if (cleaned === "" || cleaned === "-" || isNaN(Number(cleaned))) {
+                    answerInput.classList.add("shake");
+                    setTimeout(function () { answerInput.classList.remove("shake"); }, 420);
+                    setBanner("⚠️ Впиши ціле число у комірку!", "is-warn");
+                    answerInput.focus();
+                    return;
+                }
+
+                const userNum = parseInt(cleaned, 10);
+                const task = taskQueue[currentIdx];
+
+                if (userNum === task.ans) {
+                    locked = true;
+                    answerInput.disabled = true;
+                    submitBtn.disabled = true;
+
+                    if (!madeMistake) {
+                        firstTrySolved++;
+                        streak++;
+                        if (streak > bestStreak) bestStreak = streak;
+                        score += 10 + Math.min(streak * 2, 10);
+                    } else {
+                        score += 5;
+                    }
+
+                    updateHUD();
+                    setBanner(
+                        madeMistake ? "✅ Вірно! Ти чудово порахував кульки!" : "🌟 Блискуче! Правильна відповідь!",
+                        "is-success"
+                    );
+
+                    setTimeout(function () {
+                        currentIdx++;
+                        if (currentIdx < taskQueue.length) {
+                            loadQuestion(currentIdx);
+                        } else {
+                            finishQuiz();
+                        }
+                    }, 1150);
+                } else {
+                    madeMistake = true;
+                    streak = 0;
+                    updateHUD();
+
+                    answerInput.classList.add("shake");
+                    setTimeout(function () { answerInput.classList.remove("shake"); }, 420);
+                    setBanner("❌ Невірно (" + userNum + "). Дивись на візуалізацію в центрі!", "is-error");
+
+                    answerInput.value = "";
+                    animateCenterVisualization(task);
+                }
+            }
+
+            function finishQuiz() {
+                progressFill.style.width = "100%";
+                quizCard.classList.add("hidden");
+                resultCard.classList.add("active");
+
+                document.getElementById("res-score").textContent = String(score);
+                document.getElementById("res-first").textContent = firstTrySolved + " / " + taskQueue.length;
+                document.getElementById("res-streak").textContent = "🔥 " + bestStreak;
+            }
+
+            function startQuiz() {
+                clearTimers();
+                taskQueue = shuffle(BASE_TASKS.concat(EXTRA_TASKS));
+                currentIdx = 0;
+                score = 0;
+                streak = 0;
+                bestStreak = 0;
+                firstTrySolved = 0;
+
+                resultCard.classList.remove("active");
+                quizCard.classList.remove("hidden");
+                loadQuestion(0);
+            }
+
+            answerInput.addEventListener("input", function () {
+                let v = answerInput.value.replace(/−/g, "-").replace(/[^\d-]/g, "");
+                if (v.indexOf("-") > 0) {
+                    v = v.replace(/-/g, "");
+                }
+                if ((v.match(/-/g) || []).length > 1) {
+                    v = "-" + v.replace(/-/g, "");
+                }
+                answerInput.value = v;
+            });
+
+            answerInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleCheck();
+                }
+            });
+
+            submitBtn.addEventListener("click", handleCheck);
+            replayBtn.addEventListener("click", function () {
+                animateCenterVisualization(taskQueue[currentIdx]);
+            });
+            restartBtn.addEventListener("click", startQuiz);
+
+            startQuiz();
+        })();
+    </script>
+</body>
+</html>
